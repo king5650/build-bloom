@@ -47,9 +47,9 @@ function BookingPage() {
     name: "",
     phone: "",
     email: "",
-    service: CATEGORIES[0].id as string,
+    service: "painting" as string,
     date: "",
-    slot: SLOTS[0],
+    slot: "08:00 – 10:00",
     address: "",
     details: "",
   });
