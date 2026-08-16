@@ -8,7 +8,7 @@ import { BeforeAfter } from "@/components/site/BeforeAfter";
 import { useI18n } from "@/i18n/i18n";
 import { CATEGORIES, PROJECTS, type Category } from "@/data/site";
 
-export const Route = createFileRoute("/projects")({
+export const Route = createFileRoute("/projects/")({
   head: () => ({
     meta: [
       { title: "Réalisations — A.S Africa | Avant / après" },
