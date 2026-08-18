@@ -27,6 +27,7 @@ export function Footer() {
           <div className="mt-4 flex flex-col gap-2 text-sm">
             <Link to="/projects">{t({ fr: "Réalisations", en: "Projects" })}</Link>
             <Link to="/catalog">{t({ fr: "Catalogue", en: "Catalog" })}</Link>
+            <Link to="/products">{t({ fr: "Boutique", en: "Store" })}</Link>
             <Link to="/equipment">{t({ fr: "Équipement", en: "Equipment" })}</Link>
             <Link to="/team">{t({ fr: "Équipe", en: "Team" })}</Link>
             <Link to="/booking">{t({ fr: "Rendez-vous", en: "Booking" })}</Link>

@@ -1,14 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, MessageCircle } from "lucide-react";
+import { Menu, X, MessageCircle, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 
 import { useI18n, type Bi } from "@/i18n/i18n";
+import { useCart } from "@/cart/cart";
 import { CONTACT, whatsappLink } from "@/data/site";
 
 const NAV: { to: string; label: Bi }[] = [
   { to: "/projects", label: { fr: "Réalisations", en: "Projects" } },
   { to: "/catalog", label: { fr: "Catalogue", en: "Catalog" } },
+  { to: "/products", label: { fr: "Boutique", en: "Store" } },
   { to: "/equipment", label: { fr: "Équipement", en: "Equipment" } },
   { to: "/team", label: { fr: "Équipe", en: "Team" } },
   { to: "/contact", label: { fr: "Contact", en: "Contact" } },
@@ -16,6 +18,7 @@ const NAV: { to: string; label: Bi }[] = [
 
 export function Header() {
   const { t, lang, setLang } = useI18n();
+  const { count } = useCart();
   const [open, setOpen] = useState(false);
 
   return (
@@ -44,6 +47,18 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3 md:ml-0">
+          <Link
+            to="/cart"
+            aria-label={t({ fr: "Panier", en: "Cart" })}
+            className="relative flex h-9 w-9 items-center justify-center border border-border transition-colors hover:border-foreground"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {count > 0 ? (
+              <span className="label-mono absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center bg-accent px-1 text-accent-foreground">
+                {count}
+              </span>
+            ) : null}
+          </Link>
           <div className="flex items-center border border-border">
             {(["fr", "en"] as const).map((l) => (
               <button
