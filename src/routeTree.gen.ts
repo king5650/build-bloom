@@ -14,6 +14,7 @@ import { Route as BookingRouteImport } from './routes/booking'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EquipmentRouteImport } from './routes/equipment'
+import { Route as ProductsRouteImport } from './routes/products'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsSlugRouteImport } from './routes/projects.$slug'
@@ -43,6 +44,11 @@ const EquipmentRoute = EquipmentRouteImport.update({
   path: '/equipment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/projects/': typeof ProjectsIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/projects': typeof ProjectsIndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/projects/': typeof ProjectsIndexRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/products'
     | '/team'
     | '/projects/$slug'
     | '/projects/'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/products'
     | '/team'
     | '/projects/$slug'
     | '/projects'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/products'
     | '/team'
     | '/projects/$slug'
     | '/projects/'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   CatalogRoute: typeof CatalogRoute
   ContactRoute: typeof ContactRoute
   EquipmentRoute: typeof EquipmentRoute
+  ProductsRoute: typeof ProductsRoute
   TeamRoute: typeof TeamRoute
   ProjectsSlugRoute: typeof ProjectsSlugRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EquipmentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/team': {
       id: '/team'
       path: '/team'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogRoute: CatalogRoute,
   ContactRoute: ContactRoute,
   EquipmentRoute: EquipmentRoute,
+  ProductsRoute: ProductsRoute,
   TeamRoute: TeamRoute,
   ProjectsSlugRoute: ProjectsSlugRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
