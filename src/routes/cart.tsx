@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { Minus, Plus, Trash2, MessageCircle, Smartphone, Loader2, Check } from "lucide-react";
+import { Minus, Plus, Trash2, MessageCircle, Smartphone, Loader2 } from "lucide-react";
 
 import { Reveal } from "@/components/site/Reveal";
 import { useI18n } from "@/i18n/i18n";
@@ -33,18 +33,18 @@ export const Route = createFileRoute("/cart")({
   component: CartPage,
 });
 
-type Phase = "idle" | "pending" | "success" | "failed";
+type Phase = "idle" | "pending" | "failed";
 
 function CartPage() {
   const { t } = useI18n();
   const { detailed, total, count, setQty, remove, clear } = useCart();
   const start = useServerFn(startMobilePayment);
   const check = useServerFn(getPaymentStatus);
+  const navigate = useNavigate();
 
   const [phone, setPhone] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [ussd, setUssd] = useState<string | null>(null);
-  const [reference, setReference] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
@@ -77,8 +77,8 @@ function CartPage() {
       );
       return;
     }
-    setReference(res.reference);
     setUssd(res.ussdCode);
+    const orderReference = res.orderReference;
     toast.info(
       t({
         fr: "Validez la demande sur votre téléphone.",
@@ -89,45 +89,18 @@ function CartPage() {
     let elapsed = 0;
     timer.current = setInterval(async () => {
       elapsed += 5;
-      const st = await check({ data: { reference: res.reference } });
-      if (st.ok && st.status === "SUCCESSFUL") {
+      const st = await check({ data: { orderReference } });
+      if (st.ok && st.status === "PAID") {
         if (timer.current) clearInterval(timer.current);
-        setPhase("success");
         clear();
+        void navigate({ to: "/order/$reference", params: { reference: orderReference } });
         return;
       }
-      if ((st.ok && (st.status === "FAILED" || st.status === "CANCELLED")) || elapsed >= 180) {
+      if ((st.ok && st.status === "FAILED") || elapsed >= 180) {
         if (timer.current) clearInterval(timer.current);
         setPhase("failed");
       }
     }, 5000);
-  }
-
-  if (phase === "success") {
-    return (
-      <div className="mx-auto max-w-3xl px-5 py-24 text-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="mx-auto flex h-16 w-16 items-center justify-center bg-accent"
-        >
-          <Check className="h-8 w-8 text-accent-foreground" />
-        </motion.div>
-        <h1 className="display-tight mt-6 text-4xl">
-          {t({ fr: "Paiement reçu", en: "Payment received" })}
-        </h1>
-        <p className="mt-3 text-muted-foreground">
-          {t({
-            fr: "Merci. Nous vous appelons pour organiser la livraison à Yaoundé.",
-            en: "Thank you. We will call you to arrange delivery in Yaoundé.",
-          })}
-        </p>
-        {reference ? <p className="label-mono mt-3 text-foreground/50">REF {reference}</p> : null}
-        <Link to="/products" className="label-mono mt-8 inline-block bg-primary px-5 py-3.5 text-primary-foreground">
-          {t({ fr: "Retour à la boutique", en: "Back to the store" })}
-        </Link>
-      </div>
-    );
   }
 
   return (

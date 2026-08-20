@@ -31,6 +31,7 @@ export function Footer() {
             <Link to="/equipment">{t({ fr: "Équipement", en: "Equipment" })}</Link>
             <Link to="/team">{t({ fr: "Équipe", en: "Team" })}</Link>
             <Link to="/booking">{t({ fr: "Rendez-vous", en: "Booking" })}</Link>
+            <Link to="/order-status">{t({ fr: "Suivi de commande", en: "Order tracking" })}</Link>
           </div>
         </div>
 

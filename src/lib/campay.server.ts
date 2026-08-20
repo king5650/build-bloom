@@ -11,14 +11,20 @@ function baseUrl() {
 export function priceOrder(lines: OrderLine[]) {
   let total = 0;
   const labels: string[] = [];
+  const items: (OrderLine & { name: string; price: number })[] = [];
   for (const line of lines) {
     const product = PRODUCTS.find((p) => p.id === line.id);
     if (!product) continue;
     const qty = Math.max(1, Math.min(99, Math.round(line.qty)));
     total += product.price * qty;
     labels.push(`${qty}× ${product.name.fr}`);
+    items.push({ id: product.id, qty, name: product.name.fr, price: product.price });
   }
-  return { total, description: labels.join(", ").slice(0, 120) || "Commande A.S Africa" };
+  return {
+    total,
+    items,
+    description: labels.join(", ").slice(0, 120) || "Commande A.S Africa",
+  };
 }
 
 async function token() {
