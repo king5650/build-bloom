@@ -15,8 +15,10 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EquipmentRouteImport } from './routes/equipment'
+import { Route as OrderStatusRouteImport } from './routes/order-status'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as TeamRouteImport } from './routes/team'
+import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsSlugRouteImport } from './routes/projects.$slug'
 
@@ -50,6 +52,11 @@ const EquipmentRoute = EquipmentRouteImport.update({
   path: '/equipment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderStatusRoute = OrderStatusRouteImport.update({
+  id: '/order-status',
+  path: '/order-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsRoute = ProductsRouteImport.update({
   id: '/products',
   path: '/products',
@@ -58,6 +65,11 @@ const ProductsRoute = ProductsRouteImport.update({
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrderReferenceRoute = OrderReferenceRouteImport.update({
+  id: '/order/$reference',
+  path: '/order/$reference',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
@@ -78,8 +90,10 @@ export interface FileRoutesByFullPath {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/order-status': typeof OrderStatusRoute
   '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/projects/': typeof ProjectsIndexRoute
 }
@@ -90,8 +104,10 @@ export interface FileRoutesByTo {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/order-status': typeof OrderStatusRoute
   '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/projects': typeof ProjectsIndexRoute
 }
@@ -103,8 +119,10 @@ export interface FileRoutesById {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/order-status': typeof OrderStatusRoute
   '/products': typeof ProductsRoute
   '/team': typeof TeamRoute
+  '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
   '/projects/': typeof ProjectsIndexRoute
 }
@@ -117,8 +135,10 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/order-status'
     | '/products'
     | '/team'
+    | '/order/$reference'
     | '/projects/$slug'
     | '/projects/'
   fileRoutesByTo: FileRoutesByTo
@@ -129,8 +149,10 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/order-status'
     | '/products'
     | '/team'
+    | '/order/$reference'
     | '/projects/$slug'
     | '/projects'
   id:
@@ -141,8 +163,10 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/order-status'
     | '/products'
     | '/team'
+    | '/order/$reference'
     | '/projects/$slug'
     | '/projects/'
   fileRoutesById: FileRoutesById
@@ -154,8 +178,10 @@ export interface RootRouteChildren {
   CatalogRoute: typeof CatalogRoute
   ContactRoute: typeof ContactRoute
   EquipmentRoute: typeof EquipmentRoute
+  OrderStatusRoute: typeof OrderStatusRoute
   ProductsRoute: typeof ProductsRoute
   TeamRoute: typeof TeamRoute
+  OrderReferenceRoute: typeof OrderReferenceRoute
   ProjectsSlugRoute: typeof ProjectsSlugRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
 }
@@ -204,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EquipmentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order-status': {
+      id: '/order-status'
+      path: '/order-status'
+      fullPath: '/order-status'
+      preLoaderRoute: typeof OrderStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products': {
       id: '/products'
       path: '/products'
@@ -216,6 +249,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/order/$reference': {
+      id: '/order/$reference'
+      path: '/order/$reference'
+      fullPath: '/order/$reference'
+      preLoaderRoute: typeof OrderReferenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/': {
@@ -242,8 +282,10 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogRoute: CatalogRoute,
   ContactRoute: ContactRoute,
   EquipmentRoute: EquipmentRoute,
+  OrderStatusRoute: OrderStatusRoute,
   ProductsRoute: ProductsRoute,
   TeamRoute: TeamRoute,
+  OrderReferenceRoute: OrderReferenceRoute,
   ProjectsSlugRoute: ProjectsSlugRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
 }
