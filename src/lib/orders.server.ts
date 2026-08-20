@@ -95,3 +95,13 @@ export async function findOrderForGuest(reference: string, phone: string): Promi
   if (!row || normalize(row.phone) !== normalize(phone)) return null;
   return toRecord(data);
 }
+
+export async function getPaymentReference(reference: string): Promise<string | null> {
+  const db = await admin();
+  const { data } = await db
+    .from("orders")
+    .select("payment_reference")
+    .eq("reference", reference)
+    .maybeSingle();
+  return data?.payment_reference ?? null;
+}
