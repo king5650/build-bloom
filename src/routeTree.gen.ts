@@ -21,6 +21,7 @@ import { Route as TeamRouteImport } from './routes/team'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsSlugRouteImport } from './routes/projects.$slug'
+import { Route as ProjectsIndex_cldRouteImport } from './routes/projects.index_cld'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const ProjectsSlugRoute = ProjectsSlugRouteImport.update({
   path: '/projects/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsIndex_cldRoute = ProjectsIndex_cldRouteImport.update({
+  id: '/projects/index_cld',
+  path: '/projects/index_cld',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof TeamRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/projects/index_cld': typeof ProjectsIndex_cldRoute
   '/projects/': typeof ProjectsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/team': typeof TeamRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/projects/index_cld': typeof ProjectsIndex_cldRoute
   '/projects': typeof ProjectsIndexRoute
 }
 export interface FileRoutesById {
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/team': typeof TeamRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
+  '/projects/index_cld': typeof ProjectsIndex_cldRoute
   '/projects/': typeof ProjectsIndexRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/order/$reference'
     | '/projects/$slug'
+    | '/projects/index_cld'
     | '/projects/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/order/$reference'
     | '/projects/$slug'
+    | '/projects/index_cld'
     | '/projects'
   id:
     | '__root__'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/order/$reference'
     | '/projects/$slug'
+    | '/projects/index_cld'
     | '/projects/'
   fileRoutesById: FileRoutesById
 }
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   TeamRoute: typeof TeamRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ProjectsSlugRoute: typeof ProjectsSlugRoute
+  ProjectsIndex_cldRoute: typeof ProjectsIndex_cldRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
 }
 
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/index_cld': {
+      id: '/projects/index_cld'
+      path: '/projects/index_cld'
+      fullPath: '/projects/index_cld'
+      preLoaderRoute: typeof ProjectsIndex_cldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -287,6 +307,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeamRoute: TeamRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ProjectsSlugRoute: ProjectsSlugRoute,
+  ProjectsIndex_cldRoute: ProjectsIndex_cldRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
 }
 export const routeTree = rootRouteImport
