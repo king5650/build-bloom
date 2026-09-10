@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 
 import { Reveal } from "@/components/site/Reveal";
+import { getTeam } from "@/lib/api";
+import type { TeamMember as ApiTeamMember } from "@/lib/types";
 import { useI18n } from "@/i18n/i18n";
 import { STATS, TEAM } from "@/data/site";
 
@@ -26,6 +29,15 @@ export const Route = createFileRoute("/team")({
 
 function TeamPage() {
   const { t } = useI18n();
+  const [apiMembers, setApiMembers] = useState<ApiTeamMember[]>([]);
+
+  useEffect(() => {
+    getTeam()
+      .then(setApiMembers)
+      .catch(() => setApiMembers([]));
+  }, []);
+
+  const members = [...apiMembers, ...TEAM];
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
@@ -43,7 +55,37 @@ function TeamPage() {
       </Reveal>
 
       <div className="mt-12 grid gap-6 md:grid-cols-3">
-        {TEAM.map((m, i) => (
+        {members.map((m, i) => {
+          if ("role_fr" in m) {
+            return (
+              <motion.article
+                key={`api-${m.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                whileHover={{ y: -5 }}
+                className="border border-border bg-card p-7"
+              >
+                {m.photo ? (
+                  <img src={m.photo} alt={m.name} className="h-20 w-20 object-cover" />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center bg-primary">
+                    <span className="display-tight text-2xl text-primary-foreground">
+                      {m.name.slice(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <h2 className="display-tight mt-5 text-2xl">{m.name}</h2>
+                <p className="label-mono mt-1.5 text-accent">{t({ fr: m.role_fr, en: m.role_en })}</p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {t({ fr: m.bio_fr, en: m.bio_en })}
+                </p>
+              </motion.article>
+            );
+          }
+
+          return (
           <motion.article
             key={m.id}
             initial={{ opacity: 0, y: 20 }}
@@ -60,7 +102,8 @@ function TeamPage() {
             <p className="label-mono mt-1.5 text-accent">{t(m.role)}</p>
             <p className="mt-3 text-sm text-muted-foreground">{t(m.bio)}</p>
           </motion.article>
-        ))}
+          );
+        })}
       </div>
 
       <Reveal className="mt-14">

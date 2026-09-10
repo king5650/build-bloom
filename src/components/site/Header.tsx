@@ -8,6 +8,7 @@ import { useCart } from "@/cart/cart";
 import { CONTACT, whatsappLink } from "@/data/site";
 
 const NAV: { to: string; label: Bi }[] = [
+  { to: "/", label: { fr: "Acceuil", en: "Home" } },
   { to: "/projects", label: { fr: "Réalisations", en: "Projects" } },
   { to: "/catalog", label: { fr: "Catalogue", en: "Catalog" } },
   { to: "/products", label: { fr: "Boutique", en: "Store" } },
@@ -25,9 +26,14 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
         <Link to="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <span className="flex h-8 w-8 items-center justify-center bg-primary">
+          <img
+            src="/src\assets\logo white.png "
+            className="h-8 w-8"
+            style={{ borderRadius: "50%", backgroundColor: "#2B2E33" }}
+          />
+          {/* <span className="flex h-8 w-8 items-center justify-center bg-primary">
             <span className="display-tight text-sm text-primary-foreground">AS</span>
-          </span>
+          </span> */}
           <span className="display-tight text-lg tracking-wide">
             A.S <span className="text-accent">Africa</span>
           </span>

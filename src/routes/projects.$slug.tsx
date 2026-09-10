@@ -4,12 +4,21 @@ import { Reveal } from "@/components/site/Reveal";
 import { BeforeAfter } from "@/components/site/BeforeAfter";
 import { useI18n } from "@/i18n/i18n";
 import { CATEGORIES, PROJECTS } from "@/data/site";
+import { getProject } from "@/lib/api";
 
 export const Route = createFileRoute("/projects/$slug")({
-  loader: ({ params }) => {
-    const project = PROJECTS.find((p) => p.slug === params.slug);
-    if (!project) throw notFound();
-    return { slug: project.slug, title: project.title.en, summary: project.summary.en };
+  loader: async ({ params }) => {
+    const localProject = PROJECTS.find((p) => p.slug === params.slug);
+    if (localProject) {
+      return { source: "local" as const, project: localProject };
+    }
+
+    try {
+      const project = await getProject(params.slug);
+      return { source: "api" as const, project };
+    } catch {
+      throw notFound();
+    }
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -19,10 +28,9 @@ export const Route = createFileRoute("/projects/$slug")({
     }
     return {
       meta: [
-        { title: `${loaderData.title} — A.S Africa` },
-        { name: "description", content: loaderData.summary },
-        { property: "og:title", content: `${loaderData.title} — A.S Africa` },
-        { property: "og:description", content: loaderData.summary },
+        {
+          title: `${loaderData.source === "local" ? loaderData.project.title.en : loaderData.project.title_en} — A.S Africa`,
+        },
       ],
     };
   },
@@ -31,15 +39,22 @@ export const Route = createFileRoute("/projects/$slug")({
 
 function ProjectDetail() {
   const { slug } = Route.useParams();
+  const loaderData = Route.useLoaderData();
   const { t } = useI18n();
-  const project = PROJECTS.find((p) => p.slug === slug)!;
-  const category = CATEGORIES.find((c) => c.id === project.category)!;
+  if (loaderData.source === "local") {
+    return <LocalProjectDetail project={loaderData.project} />;
+  }
+
+  const project = loaderData.project;
+  const title = { fr: project.title_fr, en: project.title_en };
+  const category = CATEGORIES.find((c) => c.id === project.category);
+  const before = project.images.find((image) => image.is_before_after)?.image;
+  const after = project.images.filter((image) => image.is_before_after)[1]?.image;
 
   const facts = [
-    { label: { fr: "Type", en: "Type" }, value: t(category.label) },
-    { label: { fr: "Lieu", en: "Location" }, value: t(project.location) },
-    { label: { fr: "Durée", en: "Duration" }, value: t(project.duration) },
-    { label: { fr: "Surface", en: "Surface" }, value: project.surface },
+    { label: { fr: "Type", en: "Type" }, value: category ? t(category.label) : project.category },
+    { label: { fr: "Lieu", en: "Location" }, value: project.location },
+    { label: { fr: "Date", en: "Date" }, value: project.completed_date ?? "-" },
   ];
 
   return (
@@ -50,34 +65,25 @@ function ProjectDetail() {
 
       <Reveal className="mt-6">
         <p className="label-mono text-accent">
-          {t(category.label)} · {project.year}
+          {project.category} · {project.completed_date ?? ""}
         </p>
-        <h1 className="display-tight mt-3 text-4xl sm:text-6xl">{t(project.title)}</h1>
-        <p className="mt-4 max-w-2xl text-muted-foreground">{t(project.summary)}</p>
+        <h1 className="display-tight mt-3 text-4xl sm:text-6xl">{t(title)}</h1>
       </Reveal>
 
-      <Reveal className="mt-10">
-        <BeforeAfter before={project.before} after={project.after} alt={t(project.title)} />
-      </Reveal>
+      {before && after && (
+        <Reveal className="mt-10">
+          <BeforeAfter before={before} after={after} alt={t(title)} />
+        </Reveal>
+      )}
 
       <div className="mt-10 grid gap-10 md:grid-cols-[1.5fr_1fr]">
         <Reveal>
           <h2 className="display-tight rule-accent text-2xl">
             {t({ fr: "Le chantier", en: "The job" })}
           </h2>
-          <p className="mt-4 leading-relaxed text-muted-foreground">{t(project.description)}</p>
-
-          <h3 className="display-tight mt-8 text-xl">
-            {t({ fr: "Prestations réalisées", en: "Scope of work" })}
-          </h3>
-          <ul className="mt-4 space-y-2.5">
-            {project.scope.map((s, i) => (
-              <li key={i} className="flex gap-3 text-sm text-muted-foreground">
-                <span className="label-mono text-accent">0{i + 1}</span>
-                {t(s)}
-              </li>
-            ))}
-          </ul>
+          <p className="mt-4 leading-relaxed text-muted-foreground">
+            {t({ fr: project.description_fr, en: project.description_en })}
+          </p>
         </Reveal>
 
         <Reveal delay={0.1}>
@@ -100,6 +106,26 @@ function ProjectDetail() {
           </Link>
         </Reveal>
       </div>
+    </div>
+  );
+}
+
+function LocalProjectDetail({ project }: { project: (typeof PROJECTS)[number] }) {
+  const { t } = useI18n();
+  const category = CATEGORIES.find((c) => c.id === project.category)!;
+  return (
+    <div className="mx-auto max-w-5xl px-5 py-16">
+      <Link to="/projects" className="label-mono text-muted-foreground hover:text-foreground">
+        ← {t({ fr: "Toutes les réalisations", en: "All projects" })}
+      </Link>
+      <Reveal className="mt-6">
+        <p className="label-mono text-accent">{t(category.label)} · {project.year}</p>
+        <h1 className="display-tight mt-3 text-4xl sm:text-6xl">{t(project.title)}</h1>
+        <p className="mt-4 max-w-2xl text-muted-foreground">{t(project.summary)}</p>
+      </Reveal>
+      <Reveal className="mt-10">
+        <BeforeAfter before={project.before} after={project.after} alt={t(project.title)} />
+      </Reveal>
     </div>
   );
 }

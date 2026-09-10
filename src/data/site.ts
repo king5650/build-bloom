@@ -9,9 +9,9 @@ import p3after from "@/assets/project-3-after.jpg";
 
 export const CONTACT = {
   email: "infoasafrica@gmail.com",
-  phoneDisplay: "+237 680 777 582",
-  phoneRaw: "+237680777582",
-  whatsapp: "237680777582",
+  phoneDisplay: "+237 680 785 677",
+  phoneRaw: "+237680785677",
+  whatsapp: "237680785677",
   city: { fr: "Yaoundé, Cameroun", en: "Yaoundé, Cameroon" } as Bi,
 };
 

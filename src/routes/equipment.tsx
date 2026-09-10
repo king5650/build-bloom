@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { Wrench } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Reveal } from "@/components/site/Reveal";
+import { getEquipment } from "@/lib/api";
+import type { Equipment as ApiEquipment } from "@/lib/types";
 import { useI18n } from "@/i18n/i18n";
 import { EQUIPMENT } from "@/data/site";
 
@@ -27,6 +30,15 @@ export const Route = createFileRoute("/equipment")({
 
 function EquipmentPage() {
   const { t } = useI18n();
+  const [apiEquipment, setApiEquipment] = useState<ApiEquipment[]>([]);
+
+  useEffect(() => {
+    getEquipment()
+      .then(setApiEquipment)
+      .catch(() => setApiEquipment([]));
+  }, []);
+
+  const items = [...apiEquipment, ...EQUIPMENT];
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
@@ -44,7 +56,32 @@ function EquipmentPage() {
       </Reveal>
 
       <div className="mt-12 grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-        {EQUIPMENT.map((e, i) => (
+        {items.map((e, i) => {
+          if ("description_fr" in e) {
+            return (
+              <motion.div
+                key={`api-${e.id}`}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: i * 0.05 }}
+                whileHover={{ backgroundColor: "var(--card)" }}
+                className="bg-background p-7"
+              >
+                {e.photo ? (
+                  <img src={e.photo} alt={e.name_en} className="mb-5 aspect-video w-full object-cover" />
+                ) : (
+                  <Wrench className="h-5 w-5 text-accent" />
+                )}
+                <h2 className="display-tight mt-4 text-xl">{t({ fr: e.name_fr, en: e.name_en })}</h2>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {t({ fr: e.description_fr, en: e.description_en })}
+                </p>
+              </motion.div>
+            );
+          }
+
+          return (
           <motion.div
             key={e.id}
             initial={{ opacity: 0, y: 18 }}
@@ -59,7 +96,8 @@ function EquipmentPage() {
             <p className="label-mono mt-2 text-slate-brand">{t(e.spec)}</p>
             <p className="mt-3 text-sm text-muted-foreground">{t(e.detail)}</p>
           </motion.div>
-        ))}
+          );
+        })}
       </div>
 
       <Reveal className="mt-14">

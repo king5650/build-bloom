@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 
 import { Reveal } from "@/components/site/Reveal";
 import { BeforeAfter } from "@/components/site/BeforeAfter";
 import { useI18n } from "@/i18n/i18n";
 import { CATEGORIES, PROJECTS, type Category } from "@/data/site";
+import { getProjects } from "@/lib/api";
+import type { ProjectListItem } from "@/lib/types";
 
 export const Route = createFileRoute("/projects/")({
   head: () => ({
@@ -30,7 +32,25 @@ export const Route = createFileRoute("/projects/")({
 function ProjectsPage() {
   const { t } = useI18n();
   const [filter, setFilter] = useState<Category | "all">("all");
-  const list = PROJECTS.filter((p) => filter === "all" || p.category === filter);
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    getProjects()
+      .then(setProjects)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const list = projects.filter(
+    (p) => filter === "all" || p.category.toLowerCase() === filter,
+  );
+  const localList = PROJECTS.filter(
+    (p) =>
+      !projects.some((project) => project.slug === p.slug) &&
+      (filter === "all" || p.category === filter),
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
@@ -64,8 +84,67 @@ function ProjectsPage() {
       </div>
 
       <div className="mt-10 grid gap-12 md:grid-cols-2">
+        {loading && <p className="text-sm text-muted-foreground">Loading projects...</p>}
+        {!loading && error && (
+          <p className="text-sm text-destructive">Unable to load projects from the API.</p>
+        )}
+        {!loading && !error && list.length === 0 && localList.length === 0 && (
+          <p className="text-sm text-muted-foreground">No projects found.</p>
+        )}
         <AnimatePresence mode="popLayout">
           {list.map((p) => (
+            <motion.article
+              key={p.slug}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4 }}
+            >
+              {(() => {
+                const localProject = PROJECTS.find((project) => project.slug === p.slug);
+                return localProject ? (
+                  <BeforeAfter
+                    before={localProject.before}
+                    after={localProject.after}
+                    alt={t(localProject.title)}
+                  />
+                ) : p.before_image && p.after_image ? (
+                  <BeforeAfter
+                    before={p.before_image}
+                    after={p.after_image}
+                    alt={t({ fr: p.title_fr, en: p.title_en })}
+                  />
+                ) : (
+                  <div className="aspect-[4/3] overflow-hidden rounded-sm bg-secondary">
+                    {p.cover_image && (
+                      <img
+                        src={p.cover_image}
+                        alt={t({ fr: p.title_fr, en: p.title_en })}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                );
+              })()}
+              <div className="mt-5">
+                <p className="label-mono text-muted-foreground">
+                  {p.category} · {p.location}
+                </p>
+                <h2 className="display-tight mt-2 text-2xl">{t({ fr: p.title_fr, en: p.title_en })}</h2>
+                <Link
+                  to="/projects/$slug"
+                  params={{ slug: p.slug }}
+                  className="label-mono mt-4 inline-flex items-center gap-1.5 text-accent"
+                >
+                  {t({ fr: "Voir le chantier", en: "View the project" })}
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </motion.article>
+          ))}
+          {localList.map((p) => (
             <motion.article
               key={p.slug}
               layout

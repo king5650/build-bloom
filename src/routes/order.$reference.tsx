@@ -5,10 +5,10 @@ import { Check, Clock, X } from "lucide-react";
 import { useI18n } from "@/i18n/i18n";
 import { formatXAF } from "@/data/products";
 import { whatsappLink } from "@/data/site";
-import { getOrder } from "@/lib/checkout.functions";
+import { getOrder } from "@/lib/api";
 
 export const Route = createFileRoute("/order/$reference")({
-  loader: ({ params }) => getOrder({ data: { reference: params.reference } }),
+  loader: ({ params }) => getOrder(params.reference),
   head: ({ params }) => ({
     meta: [
       { title: `Commande ${params.reference} — A.S Africa` },
@@ -49,11 +49,10 @@ function OrderPage() {
   const { t } = useI18n();
   const result = Route.useLoaderData();
 
-  if (!result.ok) return <OrderShell missing />;
-  const order = result.order;
+  const order = result;
 
-  const paid = order.status === "PAID";
-  const failed = order.status === "FAILED" || order.status === "CANCELLED";
+  const paid = order.status === "paid";
+  const failed = order.status === "cancelled";
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-20">
@@ -96,19 +95,19 @@ function OrderPage() {
           <span className="label-mono text-muted-foreground">
             {t({ fr: "Référence", en: "Reference" })}
           </span>
-          <span className="display-tight text-2xl">{order.reference}</span>
+          <span className="display-tight text-2xl">{order.order_number}</span>
         </div>
-        {order.lines.map((line) => (
-          <div key={line.id} className="flex items-center justify-between border-b border-border p-5">
+        {order.items.map((line) => (
+          <div key={line.product} className="flex items-center justify-between border-b border-border p-5">
             <span className="text-sm">
-              {line.qty} × {line.name}
+              {line.quantity} × {line.product_name}
             </span>
-            <span className="label-mono">{formatXAF(line.price * line.qty)}</span>
+            <span className="label-mono">{formatXAF(Number(line.line_total))}</span>
           </div>
         ))}
         <div className="flex items-baseline justify-between p-5">
           <span className="label-mono text-muted-foreground">{t({ fr: "Total", en: "Total" })}</span>
-          <span className="display-tight text-3xl text-accent">{formatXAF(order.total)}</span>
+          <span className="display-tight text-3xl text-accent">{formatXAF(Number(order.total))}</span>
         </div>
       </div>
 
@@ -120,7 +119,7 @@ function OrderPage() {
           {t({ fr: "Suivre ma commande", en: "Track my order" })}
         </Link>
         <a
-          href={whatsappLink(`Bonjour A.S Africa, ma commande ${order.reference}.`)}
+          href={whatsappLink(`Bonjour A.S Africa, ma commande ${order.order_number}.`)}
           target="_blank"
           rel="noreferrer"
           className="label-mono border border-border px-5 py-3.5"
