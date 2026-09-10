@@ -116,6 +116,7 @@ if env("CLOUDINARY_CLOUD_NAME", default=""):
 CAMPAY_APP_USERNAME = env("CAMPAY_APP_USERNAME", default="")
 CAMPAY_APP_PASSWORD = env("CAMPAY_APP_PASSWORD", default="")
 CAMPAY_WEBHOOK_SECRET = env("CAMPAY_WEBHOOK_SECRET", default="")
+CAMPAY_ENV = env("CAMPAY_ENV", default="demo")
 
 # --- Email (booking/order confirmations) ---
 EMAIL_BACKEND = env(

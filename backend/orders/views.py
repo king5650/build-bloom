@@ -8,7 +8,13 @@ from rest_framework.views import APIView
 
 from .models import Order
 from .serializers import OrderCreateSerializer, OrderSerializer
-from .services import InsufficientStockError, confirm_payment_and_reserve_stock, create_order
+from .services import (
+    InsufficientStockError,
+    confirm_payment_and_reserve_stock,
+    create_order,
+    get_payment_status,
+    initiate_payment,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +32,7 @@ class OrderCreateView(APIView):
             guest_phone=data["guest_phone"],
             guest_email=data.get("guest_email", ""),
             delivery_address=data.get("delivery_address", ""),
+            channel=data["channel"],
             items=data["items"],
         )
 
@@ -42,6 +49,54 @@ class OrderLookupView(RetrieveAPIView):
     serializer_class = OrderSerializer
     lookup_field = "order_number"
     permission_classes = [AllowAny]
+
+    def get_object(self):
+        order = super().get_object()
+        phone = self.request.query_params.get("phone")
+        if phone and order.guest_phone.replace(" ", "") != phone.replace(" ", ""):
+            from rest_framework.exceptions import NotFound
+            raise NotFound()
+        return order
+
+
+class PaymentInitiateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, order_number):
+        try:
+            order = Order.objects.get(order_number=order_number, status="pending")
+            result = initiate_payment(order)
+        except Order.DoesNotExist:
+            return Response({"detail": "Order is not available for payment."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as error:
+            logger.exception("CamPay initiation failed for %s", order_number)
+            return Response({"detail": str(error)}, status=status.HTTP_502_BAD_GATEWAY)
+        return Response(result)
+
+
+class PaymentStatusView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, order_number):
+        try:
+            order = Order.objects.select_related("payment").get(order_number=order_number)
+            payment_status, _operator = get_payment_status(order)
+            if payment_status == "SUCCESSFUL" and order.status != "paid":
+                confirm_payment_and_reserve_stock(order, order.payment.campay_reference)
+            elif payment_status in {"FAILED", "CANCELLED"}:
+                order.status = "cancelled"
+                order.save(update_fields=["status"])
+                order.payment.status = "failed"
+                order.payment.save(update_fields=["status"])
+        except Order.DoesNotExist:
+            return Response({"detail": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+        except InsufficientStockError as error:
+            return Response({"detail": str(error)}, status=status.HTTP_409_CONFLICT)
+        except Exception as error:
+            logger.exception("CamPay status check failed for %s", order_number)
+            return Response({"detail": str(error)}, status=status.HTTP_502_BAD_GATEWAY)
+        order.refresh_from_db()
+        return Response(OrderSerializer(order).data)
 
 
 class CamPayWebhookView(APIView):

@@ -10,6 +10,10 @@ def generate_order_number():
 
 
 class Order(models.Model):
+    CHANNEL_CHOICES = [
+        ("mobile_money", "Mobile Money"),
+        ("whatsapp", "WhatsApp"),
+    ]
     STATUS_CHOICES = [
         ("pending", "Pending payment"),
         ("paid", "Paid"),
@@ -22,6 +26,7 @@ class Order(models.Model):
     guest_phone = models.CharField(max_length=30)
     guest_email = models.EmailField(blank=True)
     delivery_address = models.CharField(max_length=255, blank=True)
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default="mobile_money")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     total = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,6 +46,8 @@ class OrderItem(models.Model):
 
     @property
     def line_total(self):
+        if self.quantity is None or self.unit_price is None:
+            return 0
         return self.quantity * self.unit_price
 
 

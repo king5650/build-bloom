@@ -15,6 +15,7 @@ class OrderCreateSerializer(serializers.Serializer):
     guest_phone = serializers.CharField(max_length=30)
     guest_email = serializers.EmailField(required=False, allow_blank=True)
     delivery_address = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    channel = serializers.ChoiceField(choices=["mobile_money", "whatsapp"], default="mobile_money")
     items = OrderItemInputSerializer(many=True)
 
     def validate_items(self, items):
@@ -50,5 +51,5 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "order_number", "guest_name", "guest_phone", "guest_email",
-            "delivery_address", "status", "total", "created_at", "items", "payment",
+            "delivery_address", "channel", "status", "total", "created_at", "items", "payment",
         ]

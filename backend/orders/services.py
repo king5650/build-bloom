@@ -3,13 +3,78 @@ Business logic for orders, kept out of views.py so it stays testable
 and reusable (e.g. from the admin, a management command, or the webhook).
 """
 from django.db import transaction
+from django.conf import settings
+import requests
 
 from products.models import Product
 
 from .models import Order, OrderItem, Payment
 
 
-def create_order(*, guest_name, guest_phone, guest_email, delivery_address, items):
+def _campay_base_url():
+    return "https://www.campay.net" if settings.CAMPAY_ENV == "live" else "https://demo.campay.net"
+
+
+def _campay_token():
+    response = requests.post(
+        f"{_campay_base_url()}/api/token/",
+        json={
+            "username": settings.CAMPAY_APP_USERNAME,
+            "password": settings.CAMPAY_APP_PASSWORD,
+        },
+        timeout=15,
+    )
+    response.raise_for_status()
+    token = response.json().get("token")
+    if not token:
+        raise RuntimeError("CamPay returned no token")
+    return token
+
+
+def initiate_payment(order):
+    token = _campay_token()
+    response = requests.post(
+        f"{_campay_base_url()}/api/collect/",
+        headers={"Authorization": f"Token {token}"},
+        json={
+            "amount": str(order.total),
+            "currency": "XAF",
+            "from": order.guest_phone,
+            "description": f"A.S Africa order {order.order_number}",
+            "external_reference": order.order_number,
+        },
+        timeout=15,
+    )
+    response.raise_for_status()
+    data = response.json()
+    reference = data.get("reference")
+    if not reference:
+        raise RuntimeError("CamPay returned no payment reference")
+    payment = order.payment
+    payment.campay_reference = reference
+    payment.save(update_fields=["campay_reference"])
+    return {
+        "reference": reference,
+        "ussd_code": data.get("ussd_code"),
+        "operator": data.get("operator"),
+    }
+
+
+def get_payment_status(order):
+    if not order.payment.campay_reference:
+        return "PENDING", None
+    token = _campay_token()
+    response = requests.get(
+        f"{_campay_base_url()}/api/transaction/{order.payment.campay_reference}/",
+        headers={"Authorization": f"Token {token}"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data.get("status", "PENDING").upper(), data.get("operator")
+
+
+def create_order(*, guest_name, guest_phone, guest_email, delivery_address, channel, items):
     """
     Creates an Order + OrderItems + a pending Payment.
     Does NOT touch stock yet — stock is only reserved/decremented once
@@ -22,6 +87,7 @@ def create_order(*, guest_name, guest_phone, guest_email, delivery_address, item
             guest_phone=guest_phone,
             guest_email=guest_email or "",
             delivery_address=delivery_address or "",
+            channel=channel,
         )
 
         total = 0
