@@ -96,6 +96,7 @@ export interface Order {
   guest_phone: string;
   guest_email: string;
   delivery_address: string;
+  channel: "mobile_money" | "whatsapp";
   status: "pending" | "paid" | "fulfilled" | "cancelled";
   total: string;
   created_at: string;

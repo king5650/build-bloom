@@ -126,10 +126,21 @@ export const createOrder = (data: {
   guest_phone: string;
   guest_email?: string;
   delivery_address?: string;
+  channel?: "mobile_money" | "whatsapp";
   items: OrderItemInput[];
 }) => request<Order>("/orders/", { method: "POST", body: JSON.stringify(data) });
 
-export const getOrder = (orderNumber: string) => request<Order>(`/orders/${orderNumber}/`);
+export const initiateOrderPayment = (orderNumber: string) =>
+  request<{ reference: string; ussd_code: string | null; operator: string | null }>(
+    `/orders/${orderNumber}/payment/`,
+    { method: "POST" },
+  );
+
+export const getOrder = (orderNumber: string, phone?: string) =>
+  request<Order>(`/orders/${orderNumber}/${phone ? `?phone=${encodeURIComponent(phone)}` : ""}`);
+
+export const getOrderPaymentStatus = (orderNumber: string) =>
+  request<Order>(`/orders/${orderNumber}/payment/status/`);
 
 // --- bookings ---
 export const getAvailability = (date: string) =>

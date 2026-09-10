@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Search } from "lucide-react";
 
 import { Reveal } from "@/components/site/Reveal";
 import { useI18n } from "@/i18n/i18n";
 import { formatXAF } from "@/data/products";
-import { lookupOrder } from "@/lib/checkout.functions";
+import { getOrder } from "@/lib/api";
+import type { Order } from "@/lib/types";
 
 export const Route = createFileRoute("/order-status")({
   head: () => ({
@@ -29,12 +29,8 @@ export const Route = createFileRoute("/order-status")({
   component: OrderStatusPage,
 });
 
-type Order = { reference: string; status: string; total: number; createdAt: string; lines: { id: string; qty: number; name: string; price: number }[] };
-
 function OrderStatusPage() {
   const { t } = useI18n();
-  const lookup = useServerFn(lookupOrder);
-
   const [reference, setReference] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,24 +52,25 @@ function OrderStatusPage() {
     setLoading(true);
     setError(null);
     setOrder(null);
-    const res = await lookup({ data: { reference: reference.trim(), phone: cleanedPhone } });
-    setLoading(false);
-    if (!res.ok) {
+    try {
+      const result = await getOrder(reference.trim(), cleanedPhone);
+      setLoading(false);
+      setOrder(result);
+    } catch {
+      setLoading(false);
       setError(
         t({
           fr: "Aucune commande ne correspond à ces informations.",
           en: "No order matches these details.",
         }),
       );
-      return;
     }
-    setOrder(res.order);
   }
 
   const label = (status: string) =>
-    status === "PAID"
+    status === "paid"
       ? t({ fr: "Payée", en: "Paid" })
-      : status === "FAILED" || status === "CANCELLED"
+      : status === "cancelled"
         ? t({ fr: "Échouée", en: "Failed" })
         : t({ fr: "En attente", en: "Pending" });
 
@@ -133,25 +130,25 @@ function OrderStatusPage() {
       {order ? (
         <div className="mt-10 border border-border bg-card">
           <div className="flex items-baseline justify-between border-b border-border p-5">
-            <span className="display-tight text-2xl">{order.reference}</span>
+            <span className="display-tight text-2xl">{order.order_number}</span>
             <span className="label-mono text-accent">{label(order.status)}</span>
           </div>
-          {order.lines.map((line) => (
-            <div key={line.id} className="flex items-center justify-between border-b border-border p-5">
+          {order.items.map((line) => (
+            <div key={line.product} className="flex items-center justify-between border-b border-border p-5">
               <span className="text-sm">
-                {line.qty} × {line.name}
+                {line.quantity} × {line.product_name}
               </span>
-              <span className="label-mono">{formatXAF(line.price * line.qty)}</span>
+              <span className="label-mono">{formatXAF(Number(line.line_total))}</span>
             </div>
           ))}
           <div className="flex items-baseline justify-between p-5">
             <span className="label-mono text-muted-foreground">{t({ fr: "Total", en: "Total" })}</span>
-            <span className="display-tight text-3xl text-accent">{formatXAF(order.total)}</span>
+            <span className="display-tight text-3xl text-accent">{formatXAF(Number(order.total))}</span>
           </div>
           <div className="border-t border-border p-5">
             <Link
               to="/order/$reference"
-              params={{ reference: order.reference }}
+              params={{ reference: order.order_number }}
               className="label-mono text-accent"
             >
               {t({ fr: "Voir la confirmation", en: "View confirmation" })}

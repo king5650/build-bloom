@@ -9,7 +9,7 @@ import { getProducts } from "@/lib/api";
 import type { Product as ApiProduct } from "@/lib/types";
 import { useI18n } from "@/i18n/i18n";
 import { useCart } from "@/cart/cart";
-import { PRODUCTS, PRODUCT_FAMILIES, formatXAF, type ProductFamily } from "@/data/products";
+import { formatXAF } from "@/data/products";
 
 export const Route = createFileRoute("/products")({
   head: () => ({
@@ -35,31 +35,22 @@ export const Route = createFileRoute("/products")({
 function ProductsPage() {
   const { t } = useI18n();
   const { add, count } = useCart();
-  const [apiProducts, setApiProducts] = useState<ApiProduct[]>([]);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProducts()
-      .then(setApiProducts)
-      .catch(() => {
-        /* fallback to hard-coded items */
-      })
+      .then(setProducts)
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, []);
 
-  // Combine API products with hard-coded products
-  const allProducts = [...apiProducts, ...PRODUCTS];
-
-  // Extract unique categories from API products
-  const categories = Array.from(new Set(apiProducts.map((p) => p.category)))
+  const categories = Array.from(new Set(products.map((p) => p.category)))
     .filter(Boolean)
     .sort();
 
-  // Filter products by selected category
-  const items = allProducts.filter(
-    (p) => selectedCategory === "all" || p.category === selectedCategory || p.family === selectedCategory
-  );
+  const items = products.filter((p) => selectedCategory === "all" || p.category === selectedCategory);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
@@ -112,11 +103,7 @@ function ProductsPage() {
       </div>
 
       <motion.div layout className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((p, i) => {
-          // Render API products
-          if ("sku" in p) {
-            const apiProduct = p as ApiProduct;
-            return (
+        {items.map((apiProduct, i) => (
               <motion.article
                 layout
                 key={`api-${apiProduct.id}`}
@@ -148,9 +135,7 @@ function ProductsPage() {
                     {t({ fr: apiProduct.description_fr, en: apiProduct.description_en })}
                   </p>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="display-tight text-2xl text-accent">
-                      {formatXAF(Math.round(parseFloat(apiProduct.price)))}
-                    </span>
+                    <span className="display-tight text-2xl text-accent">{formatXAF(Number(apiProduct.price))}</span>
                   </div>
                   <p className="label-mono mt-1 text-foreground/50">
                     {apiProduct.stock_quantity} {t({ fr: "en stock", en: "in stock" })}
@@ -167,55 +152,7 @@ function ProductsPage() {
                   </button>
                 </div>
               </motion.article>
-            );
-          }
-
-          // Render hard-coded products
-          const hardcodedProduct = p as (typeof PRODUCTS)[0];
-          return (
-            <motion.article
-              layout
-              key={hardcodedProduct.id}
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.04 }}
-              whileHover={{ y: -4 }}
-              className="flex flex-col border border-border bg-card"
-            >
-              <div
-                className="flex h-32 items-end p-4"
-                style={{ backgroundColor: hardcodedProduct.hex }}
-                aria-hidden="true"
-              >
-                <Package className="h-6 w-6 text-background mix-blend-difference" />
-              </div>
-              <div className="flex flex-1 flex-col p-5">
-                <p className="label-mono text-muted-foreground">
-                  {t(PRODUCT_FAMILIES.find((f) => f.id === hardcodedProduct.family)!.label)}
-                </p>
-                <h2 className="display-tight mt-1.5 text-xl">{t(hardcodedProduct.name)}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{t(hardcodedProduct.spec)}</p>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="display-tight text-2xl text-accent">{formatXAF(hardcodedProduct.price)}</span>
-                  <span className="label-mono text-muted-foreground">{t(hardcodedProduct.unit)}</span>
-                </div>
-                <p className="label-mono mt-1 text-foreground/50">
-                  {hardcodedProduct.stock} {t({ fr: "en stock", en: "in stock" })}
-                </p>
-                <button
-                  onClick={() => {
-                    add(hardcodedProduct.id);
-                    toast.success(t({ fr: "Ajouté au panier", en: "Added to cart" }));
-                  }}
-                  className="label-mono mt-5 flex items-center justify-center gap-2 bg-primary px-4 py-3 text-primary-foreground transition-transform hover:-translate-y-0.5"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  {t({ fr: "Ajouter", en: "Add to cart" })}
-                </button>
-              </div>
-            </motion.article>
-          );
-        })}
+        ))}
       </motion.div>
     </div>
   );

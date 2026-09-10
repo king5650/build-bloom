@@ -8,7 +8,8 @@ import {
   type ReactNode,
 } from "react";
 
-import { PRODUCTS, type Product } from "@/data/products";
+import { getProducts } from "@/lib/api";
+import type { Product } from "@/lib/types";
 
 export type CartLine = { id: string; qty: number };
 
@@ -17,6 +18,7 @@ type Ctx = {
   count: number;
   total: number;
   detailed: { product: Product; qty: number; lineTotal: number }[];
+  loading: boolean;
   add: (id: string, qty?: number) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
@@ -29,7 +31,12 @@ const STORAGE_KEY = "as-africa-cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    getProducts().then(setProducts).catch(() => setProducts([]));
+  }, []);
 
   useEffect(() => {
     try {
@@ -45,7 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                   typeof (l as CartLine).id === "string" &&
                   Number.isFinite((l as CartLine).qty),
               )
-              .filter((l) => PRODUCTS.some((p) => p.id === l.id))
+              .filter((l) => /^\d+$/.test(l.id))
               .map((l) => ({ id: l.id, qty: Math.max(1, Math.min(99, Math.round(l.qty))) })),
           );
         }
@@ -87,8 +94,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Ctx>(() => {
     const detailed = lines.flatMap((l) => {
-      const product = PRODUCTS.find((p) => p.id === l.id);
-      return product ? [{ product, qty: l.qty, lineTotal: product.price * l.qty }] : [];
+      const product = products.find((p) => String(p.id) === l.id);
+      return product
+        ? [{ product, qty: l.qty, lineTotal: Number(product.price) * l.qty }]
+        : [];
     });
     return {
       lines,
@@ -99,8 +108,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setQty,
       remove,
       clear,
+      loading: !hydrated || products.length === 0,
     };
-  }, [lines, add, setQty, remove, clear]);
+  }, [lines, products, hydrated, add, setQty, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
