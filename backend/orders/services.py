@@ -121,6 +121,9 @@ def confirm_payment_and_reserve_stock(order: Order, campay_reference: str):
     and marks the order paid, all inside one transaction.
     """
     with transaction.atomic():
+        order = Order.objects.select_for_update().get(pk=order.pk)
+        if order.status == "paid":
+            return order
         for item in order.items.select_related("product"):
             product = Product.objects.select_for_update().get(id=item.product_id)
             if product.stock_quantity < item.quantity:

@@ -1,5 +1,8 @@
+import hashlib
+import hmac
 import logging
 
+from django.conf import settings
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny
@@ -102,8 +105,7 @@ class PaymentStatusView(APIView):
 class CamPayWebhookView(APIView):
     """
     CamPay calls this endpoint when a payment succeeds or fails.
-    IMPORTANT: signature verification below is a placeholder — replace
-    with CamPay's actual webhook signing scheme before going live.
+    CamPay must send an HMAC-SHA256 signature in X-CamPay-Signature.
     """
     permission_classes = [AllowAny]
 
@@ -111,7 +113,7 @@ class CamPayWebhookView(APIView):
         payload = request.data
         reference = payload.get("reference")
         order_number = payload.get("external_reference")
-        payment_status = payload.get("status")
+        payment_status = str(payload.get("status", "")).upper()
 
         if not self._verify_signature(request):
             return Response({"detail": "invalid signature"}, status=status.HTTP_403_FORBIDDEN)
@@ -131,11 +133,20 @@ class CamPayWebhookView(APIView):
                 order.save(update_fields=["status"])
                 # TODO: trigger a refund via CamPay + notify the customer
         else:
+            order.status = "cancelled"
+            order.save(update_fields=["status"])
             order.payment.status = "failed"
             order.payment.save(update_fields=["status"])
 
         return Response(status=status.HTTP_200_OK)
 
     def _verify_signature(self, request):
-        # Placeholder — implement against CamPay's actual webhook secret/signing header.
-        return True
+        secret = settings.CAMPAY_WEBHOOK_SECRET
+        provided = request.headers.get("X-CamPay-Signature", "")
+        if not secret or not provided:
+            return False
+        provided = provided.removeprefix("sha256=")
+        expected = hmac.new(
+            secret.encode("utf-8"), request.body, hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(provided, expected)

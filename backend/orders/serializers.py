@@ -25,6 +25,12 @@ class OrderCreateSerializer(serializers.Serializer):
         products = Product.objects.filter(id__in=product_ids, is_active=True)
         if products.count() != len(set(product_ids)):
             raise serializers.ValidationError("One or more products are unavailable.")
+        stock_by_id = {product.id: product.stock_quantity for product in products}
+        for item in items:
+            if item["quantity"] > stock_by_id[item["product_id"]]:
+                raise serializers.ValidationError(
+                    f"Not enough stock for product {item['product_id']}."
+                )
         return items
 
 
