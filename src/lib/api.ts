@@ -14,7 +14,7 @@ import type {
 } from "./types";
 
 // Set VITE_API_URL in .env — see .env.example. Falls back to local Django dev server.
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+const API_URL = import.meta.env["VITE_API_URL"] ?? "http://localhost:8000/api";
 const API_ORIGIN = new URL(API_URL).origin;
 
 function resolveMediaUrl(url: string | null) {

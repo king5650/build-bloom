@@ -15,8 +15,12 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EquipmentRouteImport } from './routes/equipment'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as OrderStatusRouteImport } from './routes/order-status'
 import { Route as ProductsRouteImport } from './routes/products'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as OrderReferenceRouteImport } from './routes/order.$reference'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
@@ -53,6 +57,16 @@ const EquipmentRoute = EquipmentRouteImport.update({
   path: '/equipment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderStatusRoute = OrderStatusRouteImport.update({
   id: '/order-status',
   path: '/order-status',
@@ -61,6 +75,16 @@ const OrderStatusRoute = OrderStatusRouteImport.update({
 const ProductsRoute = ProductsRouteImport.update({
   id: '/products',
   path: '/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeamRoute = TeamRouteImport.update({
@@ -96,8 +120,12 @@ export interface FileRoutesByFullPath {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/order-status': typeof OrderStatusRoute
   '/products': typeof ProductsRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/team': typeof TeamRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
@@ -111,8 +139,12 @@ export interface FileRoutesByTo {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/order-status': typeof OrderStatusRoute
   '/products': typeof ProductsRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/team': typeof TeamRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
@@ -127,8 +159,12 @@ export interface FileRoutesById {
   '/catalog': typeof CatalogRoute
   '/contact': typeof ContactRoute
   '/equipment': typeof EquipmentRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/order-status': typeof OrderStatusRoute
   '/products': typeof ProductsRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/team': typeof TeamRoute
   '/order/$reference': typeof OrderReferenceRoute
   '/projects/$slug': typeof ProjectsSlugRoute
@@ -144,8 +180,12 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/forgot-password'
+    | '/login'
     | '/order-status'
     | '/products'
+    | '/reset-password'
+    | '/signup'
     | '/team'
     | '/order/$reference'
     | '/projects/$slug'
@@ -159,8 +199,12 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/forgot-password'
+    | '/login'
     | '/order-status'
     | '/products'
+    | '/reset-password'
+    | '/signup'
     | '/team'
     | '/order/$reference'
     | '/projects/$slug'
@@ -174,8 +218,12 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/contact'
     | '/equipment'
+    | '/forgot-password'
+    | '/login'
     | '/order-status'
     | '/products'
+    | '/reset-password'
+    | '/signup'
     | '/team'
     | '/order/$reference'
     | '/projects/$slug'
@@ -190,8 +238,12 @@ export interface RootRouteChildren {
   CatalogRoute: typeof CatalogRoute
   ContactRoute: typeof ContactRoute
   EquipmentRoute: typeof EquipmentRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LoginRoute: typeof LoginRoute
   OrderStatusRoute: typeof OrderStatusRoute
   ProductsRoute: typeof ProductsRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SignupRoute: typeof SignupRoute
   TeamRoute: typeof TeamRoute
   OrderReferenceRoute: typeof OrderReferenceRoute
   ProjectsSlugRoute: typeof ProjectsSlugRoute
@@ -243,6 +295,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EquipmentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order-status': {
       id: '/order-status'
       path: '/order-status'
@@ -255,6 +321,20 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/products'
       preLoaderRoute: typeof ProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/team': {
@@ -302,8 +382,12 @@ const rootRouteChildren: RootRouteChildren = {
   CatalogRoute: CatalogRoute,
   ContactRoute: ContactRoute,
   EquipmentRoute: EquipmentRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  LoginRoute: LoginRoute,
   OrderStatusRoute: OrderStatusRoute,
   ProductsRoute: ProductsRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SignupRoute: SignupRoute,
   TeamRoute: TeamRoute,
   OrderReferenceRoute: OrderReferenceRoute,
   ProjectsSlugRoute: ProjectsSlugRoute,

@@ -51,9 +51,12 @@ function CatalogPage() {
     .sort();
 
   // Filter items by selected category
-  const items = allItems.filter(
-    (i) => selectedCategory === "all" || i.category === selectedCategory || i.family === selectedCategory
-  );
+  const items = allItems.filter((item) => {
+    if (selectedCategory === "all") return true;
+    return "category" in item
+      ? item.category === selectedCategory
+      : item.family === selectedCategory;
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
