@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, MessageCircle, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, MessageCircle, ShoppingCart, LogIn, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { useI18n, type Bi } from "@/i18n/i18n";
 import { useCart } from "@/cart/cart";
 import { CONTACT, whatsappLink } from "@/data/site";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const NAV: { to: string; label: Bi }[] = [
   { to: "/", label: { fr: "Acceuil", en: "Home" } },
@@ -21,6 +23,16 @@ export function Header() {
   const { t, lang, setLang } = useI18n();
   const { count } = useCart();
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => setSignedIn(Boolean(data.user)));
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") setSignedIn(true);
+      if (event === "SIGNED_OUT") setSignedIn(false);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
@@ -53,6 +65,25 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3 md:ml-0">
+          {signedIn ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              title={t({ fr: "Se déconnecter", en: "Sign out" })}
+              aria-label={t({ fr: "Se déconnecter", en: "Sign out" })}
+              onClick={() => void supabase.auth.signOut()}
+              className="rounded-none"
+            >
+              <LogOut />
+            </Button>
+          ) : (
+            <Button asChild variant="ghost" size="icon" className="rounded-none">
+              <Link to="/login" aria-label={t({ fr: "Se connecter", en: "Log in" })} title={t({ fr: "Se connecter", en: "Log in" })}>
+                <LogIn />
+              </Link>
+            </Button>
+          )}
           <Link
             to="/cart"
             aria-label={t({ fr: "Panier", en: "Cart" })}
