@@ -141,12 +141,17 @@ function RootComponent() {
   const isAuthPage = ["/login", "/signup", "/forgot-password", "/reset-password"].includes(pathname);
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      void router.invalidate();
-      if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
-    });
-    return () => data.subscription.unsubscribe();
+    try {
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+        void router.invalidate();
+        if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
+      });
+      return () => data.subscription.unsubscribe();
+    } catch (error) {
+      console.error("[Root] auth unavailable", error);
+      return undefined;
+    }
   }, [queryClient, router]);
 
   return (
