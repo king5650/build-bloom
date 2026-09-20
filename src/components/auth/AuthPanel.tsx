@@ -54,7 +54,7 @@ function strengthFor(password: string) {
   return score;
 }
 
-export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string }) {
+export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string | undefined }) {
   const { t, lang, setLang } = useI18n();
   const { count } = useCart();
   const navigate = useNavigate();
@@ -141,13 +141,13 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
         const { data, error: loginError } = await supabase.auth.signInWithPassword(credentials);
         if (loginError) throw loginError;
         const metadata = data.user.user_metadata;
-        if (metadata?.full_name && metadata?.phone) {
+        if (metadata?.["full_name"] && metadata?.["phone"]) {
           await supabase.from("profiles").upsert({
             id: data.user.id,
-            full_name: String(metadata.full_name),
-            phone: String(metadata.phone),
+            full_name: String(metadata["full_name"]),
+            phone: String(metadata["phone"]),
             email: data.user.email ?? null,
-            preferred_language: metadata.preferred_language === "en" ? "en" : "fr",
+            preferred_language: metadata["preferred_language"] === "en" ? "en" : "fr",
           });
         }
         setSuccess(true);
@@ -174,7 +174,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
       >
         <motion.div
           key={shake}
-          animate={shake && !reduceMotion ? { x: [0, -7, 6, -4, 3, 0] } : undefined}
+          animate={shake && !reduceMotion ? { x: [0, -7, 6, -4, 3, 0] } : { x: 0 }}
           transition={{ duration: 0.4 }}
           className="mx-auto w-full max-w-lg"
         >
