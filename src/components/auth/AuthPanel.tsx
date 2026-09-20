@@ -54,7 +54,7 @@ function strengthFor(password: string) {
   return score;
 }
 
-export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string }) {
+export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string | undefined }) {
   const { t, lang, setLang } = useI18n();
   const { count } = useCart();
   const navigate = useNavigate();
@@ -141,13 +141,13 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
         const { data, error: loginError } = await supabase.auth.signInWithPassword(credentials);
         if (loginError) throw loginError;
         const metadata = data.user.user_metadata;
-        if (metadata?.full_name && metadata?.phone) {
+        if (metadata?.["full_name"] && metadata?.["phone"]) {
           await supabase.from("profiles").upsert({
             id: data.user.id,
-            full_name: String(metadata.full_name),
-            phone: String(metadata.phone),
+            full_name: String(metadata["full_name"]),
+            phone: String(metadata["phone"]),
             email: data.user.email ?? null,
-            preferred_language: metadata.preferred_language === "en" ? "en" : "fr",
+            preferred_language: metadata["preferred_language"] === "en" ? "en" : "fr",
           });
         }
         setSuccess(true);
@@ -174,7 +174,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
       >
         <motion.div
           key={shake}
-          animate={shake && !reduceMotion ? { x: [0, -7, 6, -4, 3, 0] } : undefined}
+          animate={shake && !reduceMotion ? { x: [0, -7, 6, -4, 3, 0] } : { x: 0 }}
           transition={{ duration: 0.4 }}
           className="mx-auto w-full max-w-lg"
         >
@@ -207,7 +207,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
 
           <AnimatePresence>
             {error ? (
-              <motion.div initial={{ opacity: 0, height: 0, y: -8 }} animate={{ opacity: 1, height: "auto", y: 0 }} exit={{ opacity: 0, height: 0 }} role="alert" aria-live="assertive" className="mb-5 flex gap-3 border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <motion.div id="auth-error" initial={{ opacity: 0, height: 0, y: -8 }} animate={{ opacity: 1, height: "auto", y: 0 }} exit={{ opacity: 0, height: 0 }} role="alert" aria-live="assertive" className="mb-5 flex gap-3 border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
               </motion.div>
             ) : null}
@@ -220,7 +220,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
                   <Input ref={firstInput} value={fullName} onChange={(event) => setFullName(event.target.value)} autoComplete="name" placeholder="Marie Ngo" className={fieldClass} aria-describedby={error ? "auth-error" : undefined} />
                 </Field>
                 <Field label={t({ fr: "Numéro de téléphone", en: "Phone number" })} icon={<Phone />} trailing={phoneValid ? <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 450, damping: 18 }} className="text-emerald-700"><Check /></motion.span> : null}>
-                  <Input value={formattedPhone(phone)} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" inputMode="tel" className={fieldClass} />
+                  <Input value={formattedPhone(phone)} onChange={(event) => setPhone(event.target.value)} type="tel" autoComplete="tel" inputMode="tel" className={fieldClass} />
                 </Field>
                 <Field label={t({ fr: "E-mail", en: "Email" })} icon={<Mail />}>
                   <Input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" placeholder="nom@exemple.com" className={fieldClass} />
@@ -250,7 +250,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
                   {password ? (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-1">
                       <Field label={t({ fr: "Confirmer le mot de passe", en: "Confirm password" })} icon={<LockKeyhole />}>
-                        <Input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" className={cn(fieldClass, confirmPassword && confirmPassword !== password && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20")} />
+                        <Input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" aria-invalid={Boolean(confirmPassword && confirmPassword !== password)} className={cn(fieldClass, confirmPassword && confirmPassword !== password && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20")} />
                       </Field>
                     </motion.div>
                   ) : null}
@@ -281,7 +281,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string })
           </form>
 
           <div className="my-6 flex items-center gap-4"><span className="h-px flex-1 bg-border" /><span className="label-mono text-muted-foreground">{t({ fr: "ou", en: "or" })}</span><span className="h-px flex-1 bg-border" /></div>
-          <Button asChild variant="outline" className="label-mono h-12 w-full rounded-none border-foreground/30 bg-transparent hover:bg-primary hover:text-primary-foreground">
+          <Button asChild variant="outline" className="label-mono h-12 w-full rounded-none border-foreground/30 bg-transparent text-[10px] tracking-normal hover:bg-primary hover:text-primary-foreground sm:text-xs">
             <a href={whatsappLink(t({ fr: "Bonjour A.S Africa, je souhaite continuer ma commande en tant qu’invité.", en: "Hello A.S Africa, I would like to continue my order as a guest." }))} target="_blank" rel="noreferrer"><MessageCircle />{t({ fr: "Continuer comme invité via WhatsApp", en: "Continue as guest via WhatsApp" })}</a>
           </Button>
 
