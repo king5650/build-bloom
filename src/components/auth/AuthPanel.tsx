@@ -281,7 +281,7 @@ export function AuthPanel({ mode, redirect }: { mode: Mode; redirect?: string | 
           </form>
 
           <div className="my-6 flex items-center gap-4"><span className="h-px flex-1 bg-border" /><span className="label-mono text-muted-foreground">{t({ fr: "ou", en: "or" })}</span><span className="h-px flex-1 bg-border" /></div>
-          <Button asChild variant="outline" className="label-mono h-12 w-full rounded-none border-foreground/30 bg-transparent hover:bg-primary hover:text-primary-foreground">
+          <Button asChild variant="outline" className="label-mono h-12 w-full rounded-none border-foreground/30 bg-transparent text-[10px] tracking-normal hover:bg-primary hover:text-primary-foreground sm:text-xs">
             <a href={whatsappLink(t({ fr: "Bonjour A.S Africa, je souhaite continuer ma commande en tant qu’invité.", en: "Hello A.S Africa, I would like to continue my order as a guest." }))} target="_blank" rel="noreferrer"><MessageCircle />{t({ fr: "Continuer comme invité via WhatsApp", en: "Continue as guest via WhatsApp" })}</a>
           </Button>
 
