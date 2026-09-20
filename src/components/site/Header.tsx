@@ -26,12 +26,20 @@ export function Header() {
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setSignedIn(Boolean(data.user)));
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") setSignedIn(true);
-      if (event === "SIGNED_OUT") setSignedIn(false);
-    });
-    return () => data.subscription.unsubscribe();
+    try {
+      void supabase.auth
+        .getUser()
+        .then(({ data }) => setSignedIn(Boolean(data.user)))
+        .catch(() => setSignedIn(false));
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "SIGNED_IN") setSignedIn(true);
+        if (event === "SIGNED_OUT") setSignedIn(false);
+      });
+      return () => data.subscription.unsubscribe();
+    } catch (error) {
+      console.error("[Header] auth unavailable", error);
+      return undefined;
+    }
   }, []);
 
   return (
